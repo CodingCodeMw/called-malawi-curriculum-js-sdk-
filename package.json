@@ -1,0 +1,22 @@
+{
+    "name": "malawi-curriculum-api",
+    "version": "1.0.0",
+    "description": "Official JavaScript SDK for the Malawi Curriculum API",
+    "main": "src/MalawiCurriculumClient.js",
+    "type": "module",
+    "scripts": {
+        "test": "node test-sdk.js"
+    },
+    "keywords": [
+        "malawi",
+        "curriculum",
+        "education",
+        "api",
+        "sdk"
+    ],
+    "author": "CodingCodeMW",
+    "license": "ISC",
+    "dependencies": {
+        "node-fetch": "^3.3.0"
+    }
+}
