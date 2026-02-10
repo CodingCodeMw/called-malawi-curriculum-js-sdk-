@@ -6,7 +6,7 @@ const API_KEY = 'YOUR_API_KEY'; // Replace with your actual key
 const BASE_URL = 'https://malawi-curricular-api-production.up.railway.app/api/v1';
 
 async function testSDK() {
-    console.log('🧪 Testing Malawi Curriculum SDK...');
+    console.log('Testing Malawi Curriculum SDK...');
 
     const client = new MalawiCurriculumClient({
         apiKey: API_KEY,
@@ -14,27 +14,27 @@ async function testSDK() {
     });
 
     try {
-        console.log('\n📚 Fetching Subjects...');
+        console.log('\nFetching Subjects...');
         const subjects = await client.getSubjects();
-        console.log(`✅ Success! Found ${subjects.length} subjects.`);
+        console.log(`Success! Found ${subjects.length} subjects.`);
         if (subjects.length > 0) console.log('   Sample:', subjects[0]);
 
-        console.log('\n🎓 Fetching Levels...');
+        console.log('\nFetching Levels...');
         const levels = await client.getLevels();
-        console.log(`✅ Success! Found ${levels.length} levels.`);
+        console.log(`Success! Found ${levels.length} levels.`);
         if (levels.length > 0) console.log('   Sample:', levels[0]);
 
-        console.log('\n📝 Fetching Resources (MSCE Mathematics)...');
+        console.log('\nFetching Resources (MSCE Mathematics)...');
         const resources = await client.getResources({
             level: 'MSCE',
             subject: 'Mathematics',
             limit: 5
         });
-        console.log(`✅ Success! Found ${resources.length} resources.`);
+        console.log(`Success! Found ${resources.length} resources.`);
         if (resources.length > 0) console.log('   Sample:', resources[0]);
 
     } catch (error) {
-        console.error('❌ SDK Test Failed:', error.message);
+        console.error('SDK Test Failed:', error.message);
         if (error.cause) console.error('   Cause:', error.cause);
     }
 }

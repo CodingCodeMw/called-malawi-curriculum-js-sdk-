@@ -1,4 +1,4 @@
-# Malawi Curriculum API - JavaScript SDK 🇲🇼
+# Malawi Curriculum API - JavaScript SDK
 
 A simple, typed client for accessing the Malawi Curriculum API.
 
