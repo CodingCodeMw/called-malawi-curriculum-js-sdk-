@@ -156,47 +156,132 @@ const resources = await client.getResources({
 
 ---
 
-### Download Resource
+### Download Resource (Secure Token Flow)
 
-Generates a temporary signed URL to download a resource file. **Requires a paid subscription** (Basic, Pro, or Enterprise).
+Downloads use a two-step token flow for security. Requires a paid subscription (Basic, Pro, or Enterprise).
+
+#### Request a Download Token
 
 ```javascript
-try {
-  const url = await client.downloadResource(101);
-  console.log('Download URL:', url);
-} catch (error) {
-  console.error('Download failed:', error.message);
+const tokenData = await client.requestDownload(101);
+console.log('Token:', tokenData.token);
+console.log('Expires in:', tokenData.expires_in_seconds, 'seconds');
+```
+
+**Request:**
+- Method: `POST`
+- Endpoint: `/downloads/request`
+- Headers: `Authorization: Bearer API_KEY`
+- Body: `{ "resourceId": 101 }`
+
+**Response:**
+```json
+{
+  "success": true,
+  "token": "a1b2c3d4e5f6...",
+  "expires_in_seconds": 900,
+  "download_url": "/api/v1/downloads/a1b2c3d4e5f6..."
 }
+```
+
+#### Redeem the Token
+
+```javascript
+const download = await client.redeemDownload(tokenData.token);
+console.log('File URL:', download.download_url);
+// URL is valid for 5 minutes, max 2 attempts per token
 ```
 
 **Request:**
 - Method: `GET`
-- Endpoint: `/resources/:id/download`
-- Headers: `Authorization: Bearer API_KEY`
-- URL Parameters:
-  - `id`: Resource ID (integer)
+- Endpoint: `/downloads/{token}`
+- No API key required (token is the authentication)
 
-**Response (Success):**
+**Response:**
 ```json
 {
   "success": true,
   "download_url": "https://storage.googleapis.com/...",
-  "expires_in_seconds": 300
+  "expires_in_seconds": 300,
+  "attempts_remaining": 1
 }
 ```
 
-**Response (Free Tier):**
+**Error Responses:**
+```json
+// Free Tier
+{ "error": "Free tier cannot download files.", "code": "PLAN_INSUFFICIENT" }
+
+// Limit Exceeded
+{ "error": "Daily download limit exceeded (100/day).", "code": "DOWNLOAD_LIMIT_EXCEEDED" }
+
+// Token Expired
+{ "error": "Download token has expired.", "code": "TOKEN_EXPIRED" }
+
+// Max Attempts
+{ "error": "Maximum download attempts reached (2).", "code": "TOKEN_MAX_ATTEMPTS" }
+```
+
+> **Security:** Tokens expire after 15 minutes, allow max 2 download attempts, and are stored as SHA-256 hashes in the database. The signed download URL is only valid for 5 minutes.
+
+---
+
+### Search Resources
+
+Search across all curriculum resources. Results and filter capabilities depend on your plan tier.
+
+```javascript
+const results = await client.search({
+  q: 'biology past paper',
+  level: 'MSCE',        // Basic+ plans
+  type: 'past_paper',   // Pro+ plans
+  year: 2024            // Pro+ plans
+});
+```
+
+**Request:**
+- Method: `GET`
+- Endpoint: `/search`
+- Headers: `Authorization: Bearer API_KEY`
+- Query Parameters:
+  - `q` (required): Search query (min 2 characters)
+  - `level` (optional): Filter by level — Basic+ plans only
+  - `subject` (optional): Filter by subject — Basic+ plans only
+  - `type` (optional): Filter by resource type — Pro+ plans only
+  - `year` (optional): Filter by year — Pro+ plans only
+  - `limit` (optional): Max results (capped by plan tier)
+  - `offset` (optional): Pagination offset
+  - `sort` (optional): Sort order — Enterprise only (`relevance`, `newest`, `oldest`, `title`)
+
+**Response:**
 ```json
 {
-  "message": "Free tier cannot download files. Please upgrade to Basic or Pro."
+  "success": true,
+  "count": 5,
+  "total_count": 23,
+  "tier": "basic",
+  "tier_info": "Title & description search with basic filters.",
+  "data": [
+    {
+      "id": 101,
+      "title": "MSCE Biology Paper 1 2024",
+      "type": "past_paper",
+      "year": 2024,
+      "subject": "Biology",
+      "level": "MSCE",
+      "relevance": 0.8721
+    }
+  ]
 }
 ```
 
-**Response (Limit Exceeded):**
-```json
-{
-  "message": "Daily download limit exceeded (100 downloads/day). Upgrade plan for more."
-}
+**Search Tier Limits:**
+
+| Feature | Free | Basic | Pro | Enterprise |
+|---|---|---|---|---|
+| Search fields | Title only | Title + Description | Title + Description | Title + Description |
+| Max results | 10 | 50 | 100 | 500 |
+| Filters | None | Level, Subject | All | All + Sorting |
 ```
 
 ## Error Handling
