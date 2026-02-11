@@ -2,7 +2,7 @@
 
 # Malawi Curriculum API - JavaScript SDK
 
-A simple, typed client for accessing the Malawi Curriculum API.
+Official JavaScript SDK for accessing the Malawi Curriculum API.
 
 ## Installation
 
