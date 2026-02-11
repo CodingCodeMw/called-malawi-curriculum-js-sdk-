@@ -1,0 +1,5 @@
+test-sdk.js
+node_modules
+.env
+.git
+.github

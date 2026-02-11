@@ -1,3 +1,5 @@
+![npm](https://img.shields.io/npm/v/malawi-curriculum-js-sdk)
+
 # Malawi Curriculum API - JavaScript SDK
 
 A simple, typed client for accessing the Malawi Curriculum API.
@@ -5,23 +7,27 @@ A simple, typed client for accessing the Malawi Curriculum API.
 ## Installation
 
 ```bash
-npm install malawi-curriculum-api
+npm install malawi-curriculum-js-sdk
+
 ```
 
 ## Quick Start
 
 ```javascript
-import { MalawiCurriculumClient } from 'malawi-curriculum-api';
+import MalawiCurriculumClient from "malawi-curriculum-js-sdk";
 
 const client = new MalawiCurriculumClient({
-  apiKey: 'YOUR_API_KEY'
+  apiKey: "YOUR_API_KEY"
 });
 
 const resources = await client.getResources({
-  level: 'MSCE',
-  subject: 'Mathematics',
-  type: 'past_paper'
+  level: "MSCE",
+  subject: "Mathematics",
+  type: "past_paper"
 });
+
+console.log(resources);
+
 ```
 
 ## API Overview
@@ -292,7 +298,8 @@ All methods may throw errors for various reasons:
 try {
   const resources = await client.getResources({ level: 'MSCE', subject: 'Math' });
 } catch (error) {
-  if (error.response?.status === 401) {
+  console.error("API Error:", error.message);
+ {
     console.error('Invalid API key');
   } else if (error.response?.status === 429) {
     console.error('Rate limit exceeded');
@@ -336,4 +343,4 @@ Different subscription tiers provide varying levels of access. Visit the [develo
 
 ## License
 
-ISC
+MIT

@@ -1,22 +1,33 @@
 {
-    "name": "malawi-curriculum-api",
-    "version": "1.0.0",
-    "description": "Official JavaScript SDK for the Malawi Curriculum API",
-    "main": "src/MalawiCurriculumClient.js",
-    "type": "module",
-    "scripts": {
-        "test": "node test-sdk.js"
-    },
-    "keywords": [
-        "malawi",
-        "curriculum",
-        "education",
-        "api",
-        "sdk"
-    ],
-    "author": "CodingCodeMW",
-    "license": "ISC",
-    "dependencies": {
-        "node-fetch": "^3.3.0"
-    }
+  "name": "malawi-curriculum-js-sdk",
+  "version": "1.0.2",
+  "description": "Official JavaScript SDK for the Malawi Curriculum API",
+  "main": "index.js",
+  "type": "module",
+  "exports": "./index.js",
+  "scripts": {
+    "test": "node test-sdk.js"
+  },
+  "keywords": [
+    "malawi",
+    "curriculum",
+    "education",
+    "edtech",
+    "api",
+    "sdk"
+  ],
+  "author": "CodingCodeMW",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodingCodeMw/called-malawi-curriculum-js-sdk.git"
+  },
+  "homepage": "https://github.com/CodingCodeMw/called-malawi-curriculum-js-sdk",
+  "bugs": {
+    "url": "https://github.com/CodingCodeMw/called-malawi-curriculum-js-sdk/issues"
+  },
+  "dependencies": {
+    "malawi-curriculum-js-sdk": "^1.0.1",
+    "node-fetch": "^3.3.0"
+  }
 }
