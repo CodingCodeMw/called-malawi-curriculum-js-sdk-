@@ -155,11 +155,15 @@ const resources = await client.getResources({
       "year": 2023,
       "description": "Main examination paper",
       "subject": "Mathematics",
-      "level": "MSCE"
+      "level": "MSCE",
+      "price_mwk": 500,
+      "is_free": false
     }
   ]
 }
 ```
+
+> **Pricing Information:** The `price_mwk` and `is_free` fields show the cost set by you for this resource. Use these to display price tags or "Free" badges in your app.
 
 ---
 
@@ -170,16 +174,21 @@ Downloads use a two-step token flow for security. Requires a paid subscription (
 #### Request a Download Token
 
 ```javascript
-const tokenData = await client.requestDownload(101);
-console.log('Token:', tokenData.token);
-console.log('Expires in:', tokenData.expires_in_seconds, 'seconds');
+// Purpose can be 'view' or 'download' (default)
+const tokenData = await client.requestDownload(101, 'view');
+
+if (tokenData.access_level === 'preview') {
+  console.log('Restriction: View only first', tokenData.pages_allowed, 'page(s)');
+}
 ```
 
 **Request:**
 - Method: `POST`
 - Endpoint: `/downloads/request`
 - Headers: `Authorization: Bearer API_KEY`
-- Body: `{ "resourceId": 101 }`
+- Body:
+  - `resourceId`: 101
+  - `purpose` (optional): `"view"` or `"download"` (default: `"download"`)
 
 **Response:**
 ```json
@@ -187,9 +196,13 @@ console.log('Expires in:', tokenData.expires_in_seconds, 'seconds');
   "success": true,
   "token": "a1b2c3d4e5f6...",
   "expires_in_seconds": 900,
-  "download_url": "/api/v1/downloads/a1b2c3d4e5f6..."
+  "download_url": "/api/v1/downloads/a1b2c3d4e5f6...",
+  "access_level": "preview",
+  "pages_allowed": 1
 }
 ```
+
+> **Subscribers Content:** For subscribers, `purpose: "view"` returns `access_level: "full"`. For non-subscribers, it returns `"preview"`. For downloads, subscribers receive a **40% discount** automatically.
 
 #### Redeem the Token
 

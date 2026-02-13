@@ -18,6 +18,8 @@
  * @property {string} level
  * @property {number|null} year
  * @property {string|null} description
+ * @property {number} price_mwk - Price in MWK (requires API key setup)
+ * @property {boolean} is_free - Whether the resource is free for the requesting developer
  */
 
 export class MalawiCurriculumClient {
@@ -145,12 +147,13 @@ export class MalawiCurriculumClient {
     }
 
     /**
-     * Request a secure download token (paid plans only)
+     * Request a secure download token
      * @param {number} resourceId - ID of the resource to download
-     * @returns {Promise<{token: string, expires_in_seconds: number, download_url: string}>}
+     * @param {string} [purpose='download'] - Intent: 'view' (free preview/full sub access) or 'download' (paid/discounted)
+     * @returns {Promise<{token: string, expires_in_seconds: number, download_url: string, access_level: string, pages_allowed: number|null}>}
      */
-    async requestDownload(resourceId) {
-        return await this._post('/downloads/request', { resourceId });
+    async requestDownload(resourceId, purpose = 'download') {
+        return await this._post('/downloads/request', { resourceId, purpose });
     }
 
     /**
@@ -165,10 +168,11 @@ export class MalawiCurriculumClient {
     /**
      * Convenience: Request token and redeem in one call
      * @param {number} resourceId
+     * @param {string} [purpose='download']
      * @returns {Promise<string>} Signed download URL
      */
-    async download(resourceId) {
-        const { token } = await this.requestDownload(resourceId);
+    async download(resourceId, purpose = 'download') {
+        const { token } = await this.requestDownload(resourceId, purpose);
         const { download_url } = await this.redeemDownload(token);
         return download_url;
     }
