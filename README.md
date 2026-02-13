@@ -1,6 +1,13 @@
 # Malawi Curriculum API - JavaScript SDK
 
-A simple, typed client for accessing the Malawi Curriculum API.
+[![npm version](https://img.shields.io/npm/v/malawi-curriculum-api.svg)](https://www.npmjs.com/package/malawi-curriculum-api)
+[![npm downloads](https://img.shields.io/npm/dm/malawi-curriculum-api.svg)](https://www.npmjs.com/package/malawi-curriculum-api)
+[![license](https://img.shields.io/npm/l/malawi-curriculum-api.svg)](LICENSE)
+[![contributors](https://img.shields.io/github/contributors/CodingCodeMw/malawi-curriculum-api.svg)](https://github.com/CodingCodeMw/malawi-curriculum-api/graphs/contributors)
+[![GitHub stars](https://img.shields.io/github/stars/CodingCodeMw/malawi-curriculum-api.svg?style=social)](https://github.com/CodingCodeMw/malawi-curriculum-api)
+
+
+The official SDK for accessing the Malawi Curriculum API.
 
 ## Installation
 
