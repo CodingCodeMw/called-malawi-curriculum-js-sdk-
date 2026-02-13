@@ -1,11 +1,11 @@
 # Malawi Curriculum API - JavaScript SDK
 
+
 [![npm version](https://img.shields.io/npm/v/malawi-curriculum-api.svg)](https://www.npmjs.com/package/malawi-curriculum-api)
 [![npm downloads](https://img.shields.io/npm/dm/malawi-curriculum-api.svg)](https://www.npmjs.com/package/malawi-curriculum-api)
 [![license](https://img.shields.io/npm/l/malawi-curriculum-api.svg)](LICENSE)
-[![contributors](https://img.shields.io/github/contributors/CodingCodeMw/malawi-curriculum-api.svg)](https://github.com/CodingCodeMw/malawi-curriculum-api/graphs/contributors)
-[![GitHub stars](https://img.shields.io/github/stars/CodingCodeMw/malawi-curriculum-api.svg?style=social)](https://github.com/CodingCodeMw/malawi-curriculum-api)
-
+[![contributors](https://img.shields.io/github/contributors/CodingCodeMw/called-malawi-curriculum-js-sdk-.svg)](https://github.com/CodingCodeMw/called-malawi-curriculum-js-sdk-/graphs/contributors)
+[![GitHub stars](https://img.shields.io/github/stars/CodingCodeMw/called-malawi-curriculum-js-sdk-.svg?style=social)](https://github.com/CodingCodeMw/called-malawi-curriculum-js-sdk-)
 
 The official SDK for accessing the Malawi Curriculum API.
 
@@ -404,7 +404,7 @@ try {
 
 ## Rate Limits & Plans
 
-Different subscription tiers provide varying levels of access. Visit the [developer portal](https://malawi-curricular-api-production.up.railway.app) for current pricing.
+Different subscription tiers provide varying levels of access. Visit the [developer portal](https://test-d449f.web.app/) for current pricing.
 
 ### Free Plan
 - 100 requests/day
@@ -428,4 +428,4 @@ Different subscription tiers provide varying levels of access. Visit the [develo
 
 ## License
 
-ISC
+MIT
