@@ -1,71 +1,116 @@
-# Malawi Curriculum API - JavaScript SDK
-
+# Malawi Curriculum API — JavaScript SDK 🇲🇼
 
 [![npm version](https://img.shields.io/npm/v/malawi-curriculum-api.svg)](https://www.npmjs.com/package/malawi-curriculum-api)
 [![npm downloads](https://img.shields.io/npm/dm/malawi-curriculum-api.svg)](https://www.npmjs.com/package/malawi-curriculum-api)
 [![license](https://img.shields.io/npm/l/malawi-curriculum-api.svg)](LICENSE)
 [![contributors](https://img.shields.io/github/contributors/CodingCodeMw/called-malawi-curriculum-js-sdk-.svg)](https://github.com/CodingCodeMw/called-malawi-curriculum-js-sdk-/graphs/contributors)
 [![GitHub stars](https://img.shields.io/github/stars/CodingCodeMw/called-malawi-curriculum-js-sdk-.svg?style=social)](https://github.com/CodingCodeMw/called-malawi-curriculum-js-sdk-)
+[![Built for Malawi](https://img.shields.io/badge/Built%20for-Malawi%20%F0%9F%87%B2%F0%9F%87%BC-000000.svg)](#)
 
-The official SDK for accessing the Malawi Curriculum API.
+The official JavaScript SDK for the **Malawi Curriculum API** — a structured, developer-ready way to search curriculum resources (past papers, notes, textbooks, marking schemes) across Malawi’s education levels.
 
-## Installation
+- **Search and filter** curriculum resources with clean JSON responses
+- **Secure downloads** via time-limited token flow
+- **Pricing controls** per developer key (mark resources free/paid)
+
+---
+
+## Table of contents
+
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Configuration](#configuration)
+- [Core concepts](#core-concepts)
+  - [Authentication](#authentication)
+  - [Pagination](#pagination)
+  - [Resource types](#resource-types)
+- [Examples](#examples)
+  - [List levels](#list-levels)
+  - [List subjects](#list-subjects)
+  - [Get resources](#get-resources)
+  - [Search](#search)
+  - [Download (secure token flow)](#download-secure-token-flow)
+  - [Pricing (per developer key)](#pricing-per-developer-key)
+- [Errors](#errors)
+- [Rate limits and plans](#rate-limits-and-plans)
+- [Support](#support)
+- [License](#license)
+
+---
+
+## Install
 
 ```bash
 npm install malawi-curriculum-api
-```
-
-## Quick Start
-
-```javascript
-import { MalawiCurriculumClient } from 'malawi-curriculum-api';
+Quick start
+import { MalawiCurriculumClient } from "malawi-curriculum-api";
 
 const client = new MalawiCurriculumClient({
-  apiKey: 'YOUR_API_KEY'
+  apiKey: process.env.MALAWI_CURRICULUM_API_KEY,
 });
 
 const resources = await client.getResources({
-  level: 'MSCE',
-  subject: 'Mathematics',
-  type: 'past_paper'
+  level: "MSCE",
+  subject: "Mathematics",
+  type: "past_paper",
+  limit: 10,
 });
-```
 
-## API Overview
+console.log(resources);
+Configuration
+Base URL
+Default API base URL:
 
-The Malawi Curriculum API provides access to educational resources across various academic levels in Malawi. All endpoints require authentication via an API key.
-
-### Base URL
-
-```
 https://malawi-curricular-api-production.up.railway.app/api/v1
-```
+If your SDK supports overriding base URL (recommended for staging/dev), document it like:
 
-### Authentication
+const client = new MalawiCurriculumClient({
+  apiKey: process.env.MALAWI_CURRICULUM_API_KEY,
+  baseUrl: "https://malawi-curricular-api-production.up.railway.app/api/v1",
+});
+Core concepts
+Authentication
+All protected endpoints use a Bearer token API key:
 
-Include your API key in the `Authorization` header:
-
-```
 Authorization: Bearer YOUR_API_KEY
-```
+Keep your API key server-side. If you must use it in a client app, use restricted keys and enforce quotas.
 
-## API Reference
+Pagination
+Endpoints that return lists support:
 
-### Get Levels
+limit (default: 50)
 
-Retrieves all academic levels available in the Malawi curriculum.
+offset (default: 0)
 
-```javascript
+Example:
+
+const page1 = await client.search({ q: "biology", limit: 20, offset: 0 });
+const page2 = await client.search({ q: "biology", limit: 20, offset: 20 });
+Resource types
+Common type values:
+
+past_paper
+
+marking_scheme
+
+textbook
+
+teacher_notes
+
+student_notes
+
+scheme_of_work
+
+Examples
+List levels
 const levels = await client.getLevels();
-```
+console.log(levels);
+HTTP
 
-**Request:**
-- Method: `GET`
-- Endpoint: `/levels`
-- Headers: `Authorization: Bearer API_KEY`
+GET /levels
 
-**Response:**
-```json
+Example response
+
 {
   "success": true,
   "count": 3,
@@ -75,74 +120,54 @@ const levels = await client.getLevels();
     { "id": 3, "name": "Primary" }
   ]
 }
-```
+List subjects
+const subjects = await client.getSubjects("MSCE");
+console.log(subjects);
+HTTP
 
----
+GET /subjects?level=MSCE
 
-### Get Subjects
+Example response
 
-Retrieves subjects, optionally filtered by academic level.
-
-```javascript
-const subjects = await client.getSubjects('MSCE');
-```
-
-**Request:**
-- Method: `GET`
-- Endpoint: `/subjects`
-- Headers: `Authorization: Bearer API_KEY`
-- Query Parameters:
-  - `level` (optional): Filter by level name (e.g., "MSCE", "JCE")
-
-**Response:**
-```json
 {
   "success": true,
   "count": 12,
   "data": [
     { "id": 1, "name": "Mathematics", "level": "MSCE" },
-    { "id": 2, "name": "Physics", "level": "MSCE" },
-    { "id": 3, "name": "Chemistry", "level": "MSCE" }
+    { "id": 2, "name": "Physics", "level": "MSCE" }
   ]
 }
-```
-
----
-
-### Get Resources
-
-Retrieves curriculum resources with filtering options.
-
-```javascript
+Get resources
 const resources = await client.getResources({
-  level: 'MSCE',
-  subject: 'Mathematics',
-  type: 'past_paper',
+  level: "MSCE",
+  subject: "Mathematics",
+  type: "past_paper",
   year: 2023,
-  limit: 10
+  limit: 10,
+  offset: 0,
 });
-```
 
-**Request:**
-- Method: `GET`
-- Endpoint: `/resources`
-- Headers: `Authorization: Bearer API_KEY`
-- Query Parameters:
-  - `level` (required): Academic level (e.g., "MSCE", "JCE")
-  - `subject` (required): Subject name (e.g., "Mathematics")
-  - `type` (optional): Resource type
-    - `past_paper`
-    - `marking_scheme`
-    - `textbook`
-    - `teacher_notes`
-    - `student_notes`
-    - `scheme_of_work`
-  - `year` (optional): Year of the resource (integer)
-  - `limit` (optional): Number of results (1-100, default: 50)
-  - `offset` (optional): Pagination offset (default: 0)
+console.log(resources);
+HTTP
 
-**Response:**
-```json
+GET /resources
+
+Query
+
+level (required)
+
+subject (required)
+
+type (optional)
+
+year (optional)
+
+limit (optional)
+
+offset (optional)
+
+Example response
+
 {
   "success": true,
   "count": 5,
@@ -159,191 +184,39 @@ const resources = await client.getResources({
     }
   ]
 }
-```
-
----
-
-### Download Resource (Secure Token Flow)
-
-Downloads use a two-step token flow for security. Requires a paid subscription (Basic, Pro, or Enterprise).
-
-#### Request a Download Token
-
-```javascript
-const tokenData = await client.requestDownload(101);
-console.log('Token:', tokenData.token);
-console.log('Expires in:', tokenData.expires_in_seconds, 'seconds');
-```
-
-**Request:**
-- Method: `POST`
-- Endpoint: `/downloads/request`
-- Headers: `Authorization: Bearer API_KEY`
-- Body: `{ "resourceId": 101 }`
-
-**Response:**
-```json
-{
-  "success": true,
-  "token": "a1b2c3d4e5f6...",
-  "expires_in_seconds": 900,
-  "download_url": "/api/v1/downloads/a1b2c3d4e5f6..."
-}
-```
-
-#### Redeem the Token
-
-```javascript
-const download = await client.redeemDownload(tokenData.token);
-console.log('File URL:', download.download_url);
-// URL is valid for 5 minutes, max 2 attempts per token
-```
-
-**Request:**
-- Method: `GET`
-- Endpoint: `/downloads/{token}`
-- No API key required (token is the authentication)
-
-**Response:**
-```json
-{
-  "success": true,
-  "download_url": "https://storage.googleapis.com/...",
-  "expires_in_seconds": 300,
-  "attempts_remaining": 1
-}
-```
-
-**Error Responses:**
-```json
-// Free Tier
-{ "error": "Free tier cannot download files.", "code": "PLAN_INSUFFICIENT" }
-
-// Limit Exceeded
-{ "error": "Daily download limit exceeded (100/day).", "code": "DOWNLOAD_LIMIT_EXCEEDED" }
-
-// Token Expired
-{ "error": "Download token has expired.", "code": "TOKEN_EXPIRED" }
-
-// Max Attempts
-{ "error": "Maximum download attempts reached (2).", "code": "TOKEN_MAX_ATTEMPTS" }
-```
-
-> **Security:** Tokens expire after 15 minutes, allow max 2 download attempts, and are stored as SHA-256 hashes in the database. The signed download URL is only valid for 5 minutes.
-
----
-
-### Resource Pricing
-
-Set custom prices on resources or mark them as free. Each developer's pricing is independent, identified by their API key.
-
-#### Set a Price
-
-```javascript
-// Mark a resource as paid (500 MWK)
-const pricing = await client.setPrice({
-  resourceId: 101,
-  price: 500,
-  isFree: false
-});
-console.log(pricing);
-// { resource_id: 101, price_mwk: 500, is_free: false }
-
-// Mark a resource as free
-await client.setPrice({ resourceId: 101, isFree: true });
-```
-
-**Request:**
-- Method: `POST`
-- Endpoint: `/pricing/set`
-- Headers: `Authorization: Bearer API_KEY`
-- Body:
-  - `resourceId` (required): Resource ID
-  - `price` (optional): Price in MWK (ignored if `isFree` is true)
-  - `isFree` (optional): Set to `true` for free access
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "resource_id": 101,
-    "price_mwk": 500,
-    "is_free": false
-  }
-}
-```
-
-#### Get a Price
-
-```javascript
-const pricing = await client.getPrice(101);
-console.log(pricing.is_free);  // true or false
-console.log(pricing.price_mwk); // price in MWK
-```
-
-**Request:**
-- Method: `GET`
-- Endpoint: `/pricing/{resourceId}`
-- Headers: `Authorization: Bearer API_KEY`
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "resource_id": 101,
-    "price_mwk": 0,
-    "is_free": true
-  }
-}
-```
-
-If no price has been set, the resource defaults to free.
-
-**Download Enforcement:**
-
-When a resource has been priced (not free), download requests return `402 Payment Required`:
-
-```json
-{
-  "error": "This resource requires purchase before downloading.",
-  "code": "PAYMENT_REQUIRED",
-  "price_mwk": 500
-}
-```
-
----
-
-### Search Resources
-
-Search across all curriculum resources. Results and filter capabilities depend on your plan tier.
-
-```javascript
+Search
 const results = await client.search({
-  q: 'biology past paper',
-  level: 'MSCE',        // Basic+ plans
-  type: 'past_paper',   // Pro+ plans
-  year: 2024            // Pro+ plans
+  q: "biology past paper",
+  level: "MSCE",      // Basic+ plans
+  type: "past_paper", // Pro+ plans
+  year: 2024,         // Pro+ plans
+  limit: 20,
+  offset: 0,
 });
-```
 
-**Request:**
-- Method: `GET`
-- Endpoint: `/search`
-- Headers: `Authorization: Bearer API_KEY`
-- Query Parameters:
-  - `q` (required): Search query (min 2 characters)
-  - `level` (optional): Filter by level -- Basic+ plans only
-  - `subject` (optional): Filter by subject -- Basic+ plans only
-  - `type` (optional): Filter by resource type -- Pro+ plans only
-  - `year` (optional): Filter by year -- Pro+ plans only
-  - `limit` (optional): Max results (capped by plan tier)
-  - `offset` (optional): Pagination offset
-  - `sort` (optional): Sort order -- Enterprise only (`relevance`, `newest`, `oldest`, `title`)
+console.log(results);
+HTTP
 
-**Response:**
-```json
+GET /search?q=...
+
+Query
+
+q (required, min 2 chars)
+
+level (optional, Basic+)
+
+subject (optional, Basic+)
+
+type (optional, Pro+)
+
+year (optional, Pro+)
+
+limit, offset (optional)
+
+sort (optional, Enterprise: relevance, newest, oldest, title)
+
+Example response
+
 {
   "success": true,
   "count": 5,
@@ -362,70 +235,183 @@ const results = await client.search({
     }
   ]
 }
-```
+Tier limits
 
-**Search Tier Limits:**
+Feature	Free	Basic	Pro	Enterprise
+Search fields	Title only	Title + Description	Title + Description	Title + Description
+Max results	10	50	100	500
+Filters	None	Level, Subject	All	All + Sorting
+Download (secure token flow)
+Downloads use a two-step token flow:
 
-| Feature | Free | Basic | Pro | Enterprise |
-|---|---|---|---|---|
-| Search fields | Title only | Title + Description | Title + Description | Title + Description |
-| Max results | 10 | 50 | 100 | 500 |
-| Filters | None | Level, Subject | All | All + Sorting |
-```
+Request a download token (protected with API key)
 
-## Error Handling
+Redeem the token (token acts as auth)
 
-All methods may throw errors for various reasons:
+1) Request a download token
+const tokenData = await client.requestDownload(101);
 
-```javascript
-try {
-  const resources = await client.getResources({ level: 'MSCE', subject: 'Math' });
-} catch (error) {
-  if (error.response?.status === 401) {
-    console.error('Invalid API key');
-  } else if (error.response?.status === 402) {
-    console.error('Payment required for this resource');
-  } else if (error.response?.status === 429) {
-    console.error('Rate limit exceeded');
-  } else {
-    console.error('Error:', error.message);
+console.log("Token:", tokenData.token);
+console.log("Expires:", tokenData.expires_in_seconds, "seconds");
+console.log("Redeem URL:", tokenData.download_url);
+HTTP
+
+POST /downloads/request
+
+Body: { "resourceId": 101 }
+
+Example response
+
+{
+  "success": true,
+  "token": "a1b2c3d4e5f6...",
+  "expires_in_seconds": 900,
+  "download_url": "/api/v1/downloads/a1b2c3d4e5f6..."
+}
+2) Redeem the token
+const download = await client.redeemDownload(tokenData.token);
+
+console.log("Signed URL:", download.download_url);
+console.log("Signed URL expires in:", download.expires_in_seconds, "seconds");
+HTTP
+
+GET /downloads/{token}
+
+No API key required (token is the authentication)
+
+Example response
+
+{
+  "success": true,
+  "download_url": "https://storage.googleapis.com/...",
+  "expires_in_seconds": 300,
+  "attempts_remaining": 1
+}
+Security notes
+
+Token expires after 15 minutes
+
+Max 2 attempts per token
+
+Signed file URL typically valid for 5 minutes
+
+Tokens are stored as SHA-256 hashes in the database
+
+Pricing (per developer key)
+Set custom prices per resource. Pricing is scoped to your API key, so different apps can set different pricing.
+
+Set price
+// Paid resource (MWK 500)
+const pricing = await client.setPrice({
+  resourceId: 101,
+  price: 500,
+  isFree: false,
+});
+
+console.log(pricing);
+
+// Mark resource free
+await client.setPrice({ resourceId: 101, isFree: true });
+HTTP
+
+POST /pricing/set
+
+Body: { resourceId, price?, isFree? }
+
+Example response
+
+{
+  "success": true,
+  "data": {
+    "resource_id": 101,
+    "price_mwk": 500,
+    "is_free": false
   }
 }
-```
+Get price
+const pricing = await client.getPrice(101);
+console.log(pricing.is_free, pricing.price_mwk);
+HTTP
 
-### Common HTTP Status Codes
+GET /pricing/{resourceId}
 
-- `200` - Success
-- `401` - Unauthorized (invalid or missing API key)
-- `402` - Payment Required (resource has a price set)
-- `403` - Forbidden (subscription expired or insufficient permissions)
-- `404` - Resource not found
-- `429` - Rate limit exceeded
+If no price has been set, the resource defaults to free.
 
-## Rate Limits & Plans
+Download enforcement
+Paid resources return 402 Payment Required on download request:
 
-Different subscription tiers provide varying levels of access. Visit the [developer portal](https://test-d449f.web.app/) for current pricing.
+{
+  "error": "This resource requires purchase before downloading.",
+  "code": "PAYMENT_REQUIRED",
+  "price_mwk": 500
+}
+Errors
+All methods may throw errors.
 
-### Free Plan
-- 100 requests/day
-- Metadata access only
-- No file downloads
+try {
+  const resources = await client.getResources({
+    level: "MSCE",
+    subject: "Mathematics",
+  });
+} catch (error) {
+  const status = error.response?.status;
 
-### Basic Plan
-- 1,000 requests/day
-- 5 downloads/day
-- Full API access
+  if (status === 401) console.error("Invalid API key");
+  else if (status === 402) console.error("Payment required");
+  else if (status === 403) console.error("Forbidden / plan insufficient");
+  else if (status === 404) console.error("Not found");
+  else if (status === 429) console.error("Rate limit exceeded");
+  else console.error("Error:", error.message);
+}
+Common HTTP status codes
+200 Success
 
-### Pro Plan
-- 10,000 requests/day
-- 100 downloads/day
-- Priority support
+401 Unauthorized
 
-### Enterprise Plan
-- 100,000 requests/day
-- 1,000 downloads/day
-- 24/7 support
+402 Payment Required
 
-## License
+403 Forbidden
 
-MIT
+404 Not Found
+
+429 Too Many Requests
+
+Rate limits and plans
+Plan info and pricing are published on the developer portal:
+
+Developer portal: https://test-d449f.web.app/
+
+Free
+
+100 requests/day
+
+Metadata access only
+
+No downloads
+
+Basic
+
+1,000 requests/day
+
+5 downloads/day
+
+Pro
+
+10,000 requests/day
+
+100 downloads/day
+
+Priority support
+
+Enterprise
+
+100,000 requests/day
+
+1,000 downloads/day
+
+24/7 support
+
+Support
+Issues: use GitHub Issues in this repository
+
+For partnerships / schools / large deployments: contact via the developer portal
