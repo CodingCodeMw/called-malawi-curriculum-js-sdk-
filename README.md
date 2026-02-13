@@ -1,33 +1,27 @@
-![npm](https://img.shields.io/npm/v/malawi-curriculum-js-sdk)
-
 # Malawi Curriculum API - JavaScript SDK
 
-Official JavaScript SDK for accessing the Malawi Curriculum API.
+A simple, typed client for accessing the Malawi Curriculum API.
 
 ## Installation
 
 ```bash
-npm install malawi-curriculum-js-sdk
-
+npm install malawi-curriculum-api
 ```
 
 ## Quick Start
 
 ```javascript
-import MalawiCurriculumClient from "malawi-curriculum-js-sdk";
+import { MalawiCurriculumClient } from 'malawi-curriculum-api';
 
 const client = new MalawiCurriculumClient({
-  apiKey: "YOUR_API_KEY"
+  apiKey: 'YOUR_API_KEY'
 });
 
 const resources = await client.getResources({
-  level: "MSCE",
-  subject: "Mathematics",
-  type: "past_paper"
+  level: 'MSCE',
+  subject: 'Mathematics',
+  type: 'past_paper'
 });
-
-console.log(resources);
-
 ```
 
 ## API Overview
@@ -232,6 +226,88 @@ console.log('File URL:', download.download_url);
 
 ---
 
+### Resource Pricing
+
+Set custom prices on resources or mark them as free. Each developer's pricing is independent, identified by their API key.
+
+#### Set a Price
+
+```javascript
+// Mark a resource as paid (500 MWK)
+const pricing = await client.setPrice({
+  resourceId: 101,
+  price: 500,
+  isFree: false
+});
+console.log(pricing);
+// { resource_id: 101, price_mwk: 500, is_free: false }
+
+// Mark a resource as free
+await client.setPrice({ resourceId: 101, isFree: true });
+```
+
+**Request:**
+- Method: `POST`
+- Endpoint: `/pricing/set`
+- Headers: `Authorization: Bearer API_KEY`
+- Body:
+  - `resourceId` (required): Resource ID
+  - `price` (optional): Price in MWK (ignored if `isFree` is true)
+  - `isFree` (optional): Set to `true` for free access
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "resource_id": 101,
+    "price_mwk": 500,
+    "is_free": false
+  }
+}
+```
+
+#### Get a Price
+
+```javascript
+const pricing = await client.getPrice(101);
+console.log(pricing.is_free);  // true or false
+console.log(pricing.price_mwk); // price in MWK
+```
+
+**Request:**
+- Method: `GET`
+- Endpoint: `/pricing/{resourceId}`
+- Headers: `Authorization: Bearer API_KEY`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "resource_id": 101,
+    "price_mwk": 0,
+    "is_free": true
+  }
+}
+```
+
+If no price has been set, the resource defaults to free.
+
+**Download Enforcement:**
+
+When a resource has been priced (not free), download requests return `402 Payment Required`:
+
+```json
+{
+  "error": "This resource requires purchase before downloading.",
+  "code": "PAYMENT_REQUIRED",
+  "price_mwk": 500
+}
+```
+
+---
+
 ### Search Resources
 
 Search across all curriculum resources. Results and filter capabilities depend on your plan tier.
@@ -251,13 +327,13 @@ const results = await client.search({
 - Headers: `Authorization: Bearer API_KEY`
 - Query Parameters:
   - `q` (required): Search query (min 2 characters)
-  - `level` (optional): Filter by level — Basic+ plans only
-  - `subject` (optional): Filter by subject — Basic+ plans only
-  - `type` (optional): Filter by resource type — Pro+ plans only
-  - `year` (optional): Filter by year — Pro+ plans only
+  - `level` (optional): Filter by level -- Basic+ plans only
+  - `subject` (optional): Filter by subject -- Basic+ plans only
+  - `type` (optional): Filter by resource type -- Pro+ plans only
+  - `year` (optional): Filter by year -- Pro+ plans only
   - `limit` (optional): Max results (capped by plan tier)
   - `offset` (optional): Pagination offset
-  - `sort` (optional): Sort order — Enterprise only (`relevance`, `newest`, `oldest`, `title`)
+  - `sort` (optional): Sort order -- Enterprise only (`relevance`, `newest`, `oldest`, `title`)
 
 **Response:**
 ```json
@@ -298,9 +374,10 @@ All methods may throw errors for various reasons:
 try {
   const resources = await client.getResources({ level: 'MSCE', subject: 'Math' });
 } catch (error) {
-  console.error("API Error:", error.message);
- {
+  if (error.response?.status === 401) {
     console.error('Invalid API key');
+  } else if (error.response?.status === 402) {
+    console.error('Payment required for this resource');
   } else if (error.response?.status === 429) {
     console.error('Rate limit exceeded');
   } else {
@@ -313,6 +390,7 @@ try {
 
 - `200` - Success
 - `401` - Unauthorized (invalid or missing API key)
+- `402` - Payment Required (resource has a price set)
 - `403` - Forbidden (subscription expired or insufficient permissions)
 - `404` - Resource not found
 - `429` - Rate limit exceeded
@@ -343,4 +421,4 @@ Different subscription tiers provide varying levels of access. Visit the [develo
 
 ## License
 
-MIT
+ISC

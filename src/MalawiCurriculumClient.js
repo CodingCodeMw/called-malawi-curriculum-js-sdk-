@@ -183,4 +183,27 @@ export class MalawiCurriculumClient {
         const response = await this._request(`/resources/${id}/download`);
         return response.download_url;
     }
+
+    /**
+     * Set or update pricing for a resource
+     * @param {Object} options
+     * @param {number} options.resourceId - ID of the resource to price
+     * @param {number} [options.price] - Price in MWK (ignored if isFree is true)
+     * @param {boolean} [options.isFree] - Set to true to make the resource free
+     * @returns {Promise<{resource_id: number, price_mwk: number, is_free: boolean}>}
+     */
+    async setPrice({ resourceId, price, isFree }) {
+        const response = await this._post('/pricing/set', { resourceId, price, isFree });
+        return response.data;
+    }
+
+    /**
+     * Get the price set for a specific resource
+     * @param {number} resourceId - ID of the resource
+     * @returns {Promise<{resource_id: number, price_mwk: number, is_free: boolean}>}
+     */
+    async getPrice(resourceId) {
+        const response = await this._request(`/pricing/${resourceId}`);
+        return response.data;
+    }
 }
