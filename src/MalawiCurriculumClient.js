@@ -266,6 +266,32 @@ export class MalawiCurriculumClient {
     }
 
     /**
+     * Initiate a payment (Subscription or Purchase).
+     * @param {Object} data - Payment details
+     * @param {'subscription'|'purchase'} data.type - Payment type
+     * @param {string} data.mobile - Mobile number
+     * @param {'TNM'|'AIRTEL'} data.operator - Mobile operator
+     * @param {string} data.email - Email address
+     * @param {string} [data.tier] - Subscription tier (for type='subscription')
+     * @param {string} [data.developerId] - Developer ID (for type='purchase')
+     * @param {number} [data.resourceId] - Resource ID (for type='purchase')
+     * @param {number} [data.amount] - Amount (for type='purchase')
+     * @returns {Promise<Object>} - { success, charge_id, status, message }
+     */
+    async initiatePayment(data) {
+        return this._post('/payments/initiate', data);
+    }
+
+    /**
+     * Verify a payment status.
+     * @param {string} chargeId - The charge ID returned from initiatePayment
+     * @returns {Promise<Object>} - { success, status, data }
+     */
+    async verifyPayment(chargeId) {
+        return this._get(`/payments/verify/${chargeId}`, {}, (data) => data);
+    }
+
+    /**
      * Get related resources for a given resource
      * @param {number} resourceId - ID of the source resource
      * @returns {Promise<Resource[]>} Up to 5 related resources

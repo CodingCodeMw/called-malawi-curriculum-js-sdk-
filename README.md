@@ -63,6 +63,43 @@ try {
 }
 ```
 
+### Payments
+
+Initiate mobile money payments for subscriptions or resource purchases.
+
+#### Developer Subscription (Pay Platform)
+```javascript
+const response = await client.initiatePayment({
+    type: 'subscription',
+    tier: 'pro',
+    mobile: '26599123456',
+    operator: 'AIRTEL', // or 'TNM'
+    email: 'dev@example.com'
+});
+console.log('Charge ID:', response.charge_id);
+```
+
+#### Purchase Resource (User pays Developer)
+```javascript
+const response = await client.initiatePayment({
+    type: 'purchase',
+    developerId: 'DEV_UUID',
+    resourceId: 123,
+    amount: 500,
+    mobile: '26588123456',
+    operator: 'TNM',
+    email: 'user@example.com'
+});
+```
+
+#### Verify Payment
+```javascript
+const status = await client.verifyPayment(chargeId);
+if (status.data.status === 'successful') {
+    console.log('Payment Successful');
+}
+```
+
 ## API Overview
 
 The Malawi Curriculum API provides access to educational resources across various academic levels in Malawi. All endpoints require authentication via an API key.
