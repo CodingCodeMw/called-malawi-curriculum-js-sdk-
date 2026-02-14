@@ -26,13 +26,23 @@ export class MalawiCurriculumClient {
     /**
      * @param {Object} config
      * @param {string} config.apiKey - Your API Key
-     * @param {string} [config.baseUrl] - API Base URL (default: https://malawi-curricular-api-production.up.railway.app/api/v1)
+     * @param {string} [config.baseUrl] - API Base URL
+     * @param {string} [config.firebaseToken] - Firebase ID Token (for paid resource access)
      */
-    constructor({ apiKey, baseUrl }) {
+    constructor({ apiKey, baseUrl, firebaseToken }) {
         if (!apiKey) throw new Error('API Key is required');
 
         this.apiKey = apiKey;
         this.baseUrl = baseUrl || 'https://malawi-curricular-api-production.up.railway.app/api/v1';
+        this.firebaseToken = firebaseToken;
+    }
+
+    /**
+     * Set or update the Firebase ID Token
+     * @param {string} token 
+     */
+    setFirebaseToken(token) {
+        this.firebaseToken = token;
     }
 
     /**
@@ -49,14 +59,17 @@ export class MalawiCurriculumClient {
         });
 
         const url = `${this.baseUrl}${endpoint}?${params.toString()}`;
+        const headers = {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+        };
+
+        if (this.firebaseToken) {
+            headers['X-Firebase-Token'] = this.firebaseToken;
+        }
 
         try {
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${this.apiKey}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await fetch(url, { headers });
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -77,14 +90,19 @@ export class MalawiCurriculumClient {
      */
     async _post(endpoint, body = {}) {
         const url = `${this.baseUrl}${endpoint}`;
+        const headers = {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+        };
+
+        if (this.firebaseToken) {
+            headers['X-Firebase-Token'] = this.firebaseToken;
+        }
 
         try {
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.apiKey}`,
-                    'Content-Type': 'application/json'
-                },
+                headers,
                 body: JSON.stringify(body)
             });
 
@@ -184,8 +202,11 @@ export class MalawiCurriculumClient {
      */
     async downloadResource(id) {
         console.warn('[DEPRECATED] downloadResource() is deprecated. Use download() for the secure token flow.');
-        const response = await this._request(`/resources/${id}/download`);
-        return response.download_url;
+        // This old endpoint is gone/legacy, but for SDK compat we redirect to new flow if possible or just fail?
+        // Since strict mode is on, we should probably advise new flow.
+        // But let's try to map it to new flow if possible?
+        // "downloadResource(id)" implies purpose=download.
+        return this.download(id, 'download');
     }
 
     /**
@@ -209,5 +230,79 @@ export class MalawiCurriculumClient {
     async getPrice(resourceId) {
         const response = await this._request(`/pricing/${resourceId}`);
         return response.data;
+    }
+
+    /**
+     * Helper to make authenticated DELETE requests
+     * @private
+     */
+    async _delete(endpoint) {
+        const url = `${this.baseUrl}${endpoint}`;
+        const headers = {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+        };
+
+        if (this.firebaseToken) {
+            headers['X-Firebase-Token'] = this.firebaseToken;
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`API Error ${response.status}: ${errorText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            if (error.cause) console.error('Network Error Cause:', error.cause);
+            throw error;
+        }
+    }
+
+    /**
+     * Get related resources for a given resource
+     * @param {number} resourceId - ID of the source resource
+     * @returns {Promise<Resource[]>} Up to 5 related resources
+     */
+    async getRelatedResources(resourceId) {
+        const response = await this._request(`/resources/${resourceId}/related`);
+        return response.data || [];
+    }
+
+    /**
+     * List bookmarked resources
+     * @param {Object} [options]
+     * @param {number} [options.limit] - Max results (1-100)
+     * @param {number} [options.offset] - Pagination offset
+     * @returns {Promise<Object[]>} Bookmarked resources with metadata
+     */
+    async getBookmarks(options = {}) {
+        const response = await this._request('/bookmarks', options);
+        return response.data || [];
+    }
+
+    /**
+     * Bookmark a resource
+     * @param {number} resourceId - ID of the resource to bookmark
+     * @returns {Promise<Object>} Bookmark record
+     */
+    async addBookmark(resourceId) {
+        const response = await this._post('/bookmarks', { resource_id: resourceId });
+        return response.data;
+    }
+
+    /**
+     * Remove a bookmark
+     * @param {number} resourceId - ID of the resource to un-bookmark
+     * @returns {Promise<Object>} Confirmation
+     */
+    async removeBookmark(resourceId) {
+        return await this._delete(`/bookmarks/${resourceId}`);
     }
 }

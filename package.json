@@ -1,6 +1,6 @@
 {
     "name": "malawi-curriculum-api",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "Official JavaScript SDK for the Malawi Curriculum API",
     "main": "src/MalawiCurriculumClient.js",
     "type": "module",

@@ -15,20 +15,52 @@ The official SDK for accessing the Malawi Curriculum API.
 npm install malawi-curriculum-api
 ```
 
-## Quick Start
+### Authentication
+
+Initialize the client with your API Key and optional Firebase ID Token for user-specific access (subscriptions/purchases).
 
 ```javascript
 import { MalawiCurriculumClient } from 'malawi-curriculum-api';
 
-const client = new MalawiCurriculumClient({
-  apiKey: 'YOUR_API_KEY'
+const client = new MalawiCurriculumClient({ 
+  apiKey: 'YOUR_API_KEY',
+  firebaseToken: 'USER_FIREBASE_ID_TOKEN' // Optional: for accessing paid resources
 });
 
-const resources = await client.getResources({
-  level: 'MSCE',
-  subject: 'Mathematics',
-  type: 'past_paper'
+// Update token later (e.g., on user login/refresh)
+client.setFirebaseToken('NEW_TOKEN');
+```
+
+### Search Resources
+
+Search with powerful filtering options. Access to filters depends on your API Key plan tier.
+
+```javascript
+const results = await client.search({
+    q: 'mathematics',
+    level: 'MSCE',       // Basic+ Plan
+    year: 2023,          // Pro+ Plan
+    type: 'past_paper',  // Pro+ Plan
+    limit: 10
 });
+```
+
+### Secure Downloads
+
+Request a secure, short-lived download URL. This flow enforces entitlements (subscriptions/purchases).
+
+```javascript
+try {
+    // 1. Get signed URL (handles payment checks automatically)
+    const url = await client.download(123, 'download');
+    
+    // 2. Open or download
+    window.location.href = url;
+} catch (error) {
+    if (error.message.includes('402')) {
+        console.error('Payment Required');
+    }
+}
 ```
 
 ## API Overview
@@ -325,6 +357,107 @@ When a resource has been priced (not free), download requests return `402 Paymen
   "price_mwk": 500
 }
 ```
+
+---
+
+### Related Resources
+
+Get resources similar to a given resource (same subject/level), prioritising the same year.
+
+```javascript
+const related = await client.getRelatedResources(101);
+console.log(related);
+// Up to 5 resources from the same subject and level
+```
+
+**Request:**
+- Method: `GET`
+- Endpoint: `/resources/{id}/related`
+- Headers: `Authorization: Bearer API_KEY`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 102,
+      "title": "MSCE Mathematics Paper 2 2023",
+      "type": "past_paper",
+      "year": 2023,
+      "subject": "Mathematics",
+      "level": "MSCE",
+      "price_mwk": 500,
+      "is_free": false
+    }
+  ]
+}
+```
+
+---
+
+### Bookmarks
+
+Save resources for quick access later.
+
+#### List Bookmarks
+
+```javascript
+const bookmarks = await client.getBookmarks({ limit: 20 });
+```
+
+**Request:**
+- Method: `GET`
+- Endpoint: `/bookmarks`
+- Headers: `Authorization: Bearer API_KEY`
+- Query Parameters:
+  - `limit` (optional): Max results (1-100, default: 50)
+  - `offset` (optional): Pagination offset
+
+**Response:**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": [
+    {
+      "id": 1,
+      "resource_id": 101,
+      "title": "MSCE Mathematics Paper 1 2023",
+      "type": "past_paper",
+      "year": 2023,
+      "subject": "Mathematics",
+      "level": "MSCE",
+      "price_mwk": 500,
+      "is_free": false,
+      "bookmarked_at": "2026-02-14T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+#### Add Bookmark
+
+```javascript
+const bookmark = await client.addBookmark(101);
+console.log(bookmark);
+// { id: 1, resource_id: 101, created_at: "..." }
+```
+
+**Request:**
+- Method: `POST`
+- Endpoint: `/bookmarks`
+- Body: `{ "resource_id": 101 }`
+
+#### Remove Bookmark
+
+```javascript
+await client.removeBookmark(101);
+```
+
+**Request:**
+- Method: `DELETE`
+- Endpoint: `/bookmarks/{resourceId}`
 
 ---
 
