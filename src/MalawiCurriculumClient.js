@@ -170,7 +170,7 @@ export class MalawiCurriculumClient {
      * @param {string} [purpose='download'] - Intent: 'view' (free preview/full sub access) or 'download' (paid/discounted)
      * @returns {Promise<{token: string, expires_in_seconds: number, download_url: string, access_level: string, pages_allowed: number|null}>}
      */
-    async requestDownload(resourceId, purpose = 'download') {
+    async requestDownload(resourceId, purpose = 'view') {
         return await this._post('/downloads/request', { resourceId, purpose });
     }
 
@@ -189,7 +189,7 @@ export class MalawiCurriculumClient {
      * @param {string} [purpose='download']
      * @returns {Promise<string>} Signed download URL
      */
-    async download(resourceId, purpose = 'download') {
+    async download(resourceId, purpose = 'view') {
         const { token } = await this.requestDownload(resourceId, purpose);
         const { download_url } = await this.redeemDownload(token);
         return download_url;
